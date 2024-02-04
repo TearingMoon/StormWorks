@@ -58,12 +58,40 @@ Target6 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks =
 Target7 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
 Target8 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
 
+CurrentSelectedEntityData = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false};
 
 function onTick()
-    radarSection = property.getNumber("RadarMaxDistanceX") / 3;
     orientation = property.getNumber("Radar Position Adjustment");
-    displayZoom = input.getNumber(4); -- Input 4 es el nivel de zoom hasta 3
-    currentRadarDisplay = radarSection * displayZoom;
+    displayZoom = input.getNumber(4);
+
+    ULR = property.getNumber("Ultra Long Range");
+    LR = property.getNumber("Long Range");
+    MR = property.getNumber("Medium Range");
+    SR = property.getNumber("Short Range");
+    SSR = property.getNumber("Super Short Range");
+
+    entityDurationTime = property.getNumber("Entity representation time");
+
+    currentRadarDisplay = ULR;
+    currentRadarDisplayText = "ULR";
+
+    if displayZoom == 1 then
+        currentRadarDisplay = ULR;
+        currentRadarDisplayText = "ULR";
+    elseif displayZoom == 2 then
+        currentRadarDisplay = LR;
+        currentRadarDisplayText = "LR";
+    elseif displayZoom == 3 then
+        currentRadarDisplay = MR;
+        currentRadarDisplayText = "MR";
+    elseif displayZoom == 4 then
+        currentRadarDisplay = SR;
+        currentRadarDisplayText = "SR";
+    elseif displayZoom == 5 then
+        currentRadarDisplay = SSR;
+        currentRadarDisplayText = "SSR";
+    end
+
     -- Target 1
     T1ID = input.getBool(1);
     T1Distance = input.getNumber(1);
@@ -104,6 +132,81 @@ function onTick()
     T8Distance = input.getNumber(29);
     T8Azimuth = input.getNumber(30);
     T8Elevation = input.getNumber(31);
+
+    currentSelectedEntity = input.getNumber(8);
+
+    if currentSelectedEntity == 1 then
+        CurrentSelectedEntityData = {
+            Distance = Target1.Distance,
+            Azimuth = Target1.Azimuth,
+            Elevation = Target1
+                .Elevation,
+            IsDrawing = Target1.IsDrawing
+        };
+    elseif currentSelectedEntity == 2 then
+        CurrentSelectedEntityData = {
+            Distance = Target2.Distance,
+            Azimuth = Target2.Azimuth,
+            Elevation = Target2
+                .Elevation,
+            IsDrawing = Target2.IsDrawing
+        };
+    elseif currentSelectedEntity == 3 then
+        CurrentSelectedEntityData = {
+            Distance = Target3.Distance,
+            Azimuth = Target3.Azimuth,
+            Elevation = Target3
+                .Elevation,
+            IsDrawing = Target3.IsDrawing
+        };
+    elseif currentSelectedEntity == 4 then
+        CurrentSelectedEntityData = {
+            Distance = Target4.Distance,
+            Azimuth = Target4.Azimuth,
+            Elevation = Target4
+                .Elevation,
+            IsDrawing = Target4.IsDrawing
+        };
+    elseif currentSelectedEntity == 5 then
+        CurrentSelectedEntityData = {
+            Distance = Target5.Distance,
+            Azimuth = Target5.Azimuth,
+            Elevation = Target5
+                .Elevation,
+            IsDrawing = Target5.IsDrawing
+        };
+    elseif currentSelectedEntity == 6 then
+        CurrentSelectedEntityData = {
+            Distance = Target6.Distance,
+            Azimuth = Target6.Azimuth,
+            Elevation = Target6
+                .Elevation,
+            IsDrawing = Target6.IsDrawing
+        };
+    elseif currentSelectedEntity == 7 then
+        CurrentSelectedEntityData = {
+            Distance = Target7.Distance,
+            Azimuth = Target7.Azimuth,
+            Elevation = Target7
+                .Elevation,
+            IsDrawing = Target7.IsDrawing
+        };
+    elseif currentSelectedEntity == 8 then
+        CurrentSelectedEntityData = {
+            Distance = Target8.Distance,
+            Azimuth = Target8.Azimuth,
+            Elevation = Target8
+                .Elevation,
+            IsDrawing = Target8.IsDrawing
+        };
+    end
+
+    -- Send Data of selected Entity out
+    output.setNumber(1, CurrentSelectedEntityData.Distance);
+    output.setNumber(2, CurrentSelectedEntityData.Azimuth);
+    output.setNumber(3, CurrentSelectedEntityData.Elevation);
+    output.setNumber(4, currentSelectedEntity);
+    output.setNumber(5, currentRadarDisplay);
 end
 
 function onDraw()
@@ -112,10 +215,22 @@ function onDraw()
     centerx = w / 2;
     centery = h / 2;
     radarRadius = centery - h / 12;
-    screen.setColor(255,255,255);
-    screen.drawTextBox(0, 0, w, h / 12, tostring(displayZoom));
+    screen.setColor(255, 255, 255);
+    screen.drawTextBox(0, 0, w, h / 12, currentRadarDisplayText);
+    screen.drawTextBox(0, h - h / 12, w, h / 12, tostring(math.floor(currentRadarDisplay)) .. "m");
 
-    durationTime = 60 * 5;
+    durationTime = 60 * entityDurationTime;
+
+    radarCorrection = 0.25
+    if orientation == 0 then
+        radarCorrection = 0.25
+    elseif orientation == 1 then
+        radarCorrection = -0.25
+    elseif orientation == 2 then
+        radarCorrection = 0.5
+    elseif orientation == 3 then
+        radarCorrection = 0
+    end
 
     if T1ID then
         Target1 = { Distance = T1Distance, Azimuth = T1Azimuth, Elevation = T1Elevation, Ticks = 0, IsDrawing = true };
@@ -124,7 +239,7 @@ function onDraw()
         Target1.Ticks = Target1.Ticks + 1;
         DrawTarget(Target1.Distance, Target1.Azimuth, Target1.Elevation);
         if (Target1.Ticks > durationTime) then
-            Target1.IsDrawing = false;
+            Target1 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
         end
     end
 
@@ -135,7 +250,7 @@ function onDraw()
         Target2.Ticks = Target2.Ticks + 1;
         DrawTarget(Target2.Distance, Target2.Azimuth, Target2.Elevation);
         if (Target2.Ticks > durationTime) then
-            Target2.IsDrawing = false;
+            Target2 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
         end
     end
 
@@ -146,7 +261,7 @@ function onDraw()
         Target3.Ticks = Target3.Ticks + 1;
         DrawTarget(Target3.Distance, Target3.Azimuth, Target3.Elevation);
         if (Target3.Ticks > durationTime) then
-            Target3.IsDrawing = false;
+            Target3 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
         end
     end
 
@@ -157,7 +272,7 @@ function onDraw()
         Target4.Ticks = Target4.Ticks + 1;
         DrawTarget(Target4.Distance, Target4.Azimuth, Target4.Elevation);
         if (Target4.Ticks > durationTime) then
-            Target4.IsDrawing = false;
+            Target4 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
         end
     end
 
@@ -168,7 +283,7 @@ function onDraw()
         Target5.Ticks = Target5.Ticks + 1;
         DrawTarget(Target5.Distance, Target5.Azimuth, Target5.Elevation);
         if (Target5.Ticks > durationTime) then
-            Target5.IsDrawing = false;
+            Target5 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
         end
     end
 
@@ -179,51 +294,56 @@ function onDraw()
         Target6.Ticks = Target6.Ticks + 1;
         DrawTarget(Target6.Distance, Target6.Azimuth, Target6.Elevation);
         if (Target6.Ticks > durationTime) then
-            Target6.IsDrawing = false;
+            Target6 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
         end
     end
 
     if T7ID then
-        Target7 = { Distance = T7Distance, Azimuth = T7Azimuth, Elevation = T7Elevation , Ticks = 0, IsDrawing = true };
+        Target7 = { Distance = T7Distance, Azimuth = T7Azimuth, Elevation = T7Elevation, Ticks = 0, IsDrawing = true };
     end
     if Target7.IsDrawing then
         Target7.Ticks = Target7.Ticks + 1;
         DrawTarget(Target7.Distance, Target7.Azimuth, Target7.Elevation);
         if (Target7.Ticks > durationTime) then
-            Target7.IsDrawing = false;
+            Target7 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
         end
     end
 
     if T8ID then
-        Target8 = { Distance = T8Distance, Azimuth = T8Azimuth, Elevation = T8Elevation , Ticks = 0 , IsDrawing = true };
+        Target8 = { Distance = T8Distance, Azimuth = T8Azimuth, Elevation = T8Elevation, Ticks = 0, IsDrawing = true };
     end
     if Target8.IsDrawing then
         Target8.Ticks = Target8.Ticks + 1;
         DrawTarget(Target8.Distance, Target8.Azimuth, Target8.Elevation);
         if (Target8.Ticks > durationTime) then
-            Target8.IsDrawing = false;
+            Target8 = { Distance = 0, Azimuth = 0, Elevation = 0, IsDrawing = false, Ticks = 0 };
         end
     end
+
+    DrawSelectedEntitySquare();
 end
 
 function DrawTarget(Distance, Azimuth, Elevation)
     if (Distance < currentRadarDisplay) then
-        radarCorrection = 0.25
-        if orientation == 0 then
-            radarCorrection = 0.25
-        elseif orientation == 1 then
-            radarCorrection = -0.25
-        elseif orientation == 2 then
-            radarCorrection = 0.5
-        elseif orientation == 3 then
-            radarCorrection = 0
-        end
-
         local DistanceRadius = (radarRadius / currentRadarDisplay) * Distance;
         local AngleInRads = (Azimuth - radarCorrection) * 2 * math.pi;
         local x = centerx + DistanceRadius * math.cos(AngleInRads);
         local y = centery + DistanceRadius * math.sin(AngleInRads);
         screen.setColor(255, 0, 0);
         screen.drawCircleF(x, y, 1);
+    end
+end
+
+function DrawSelectedEntitySquare()
+    if (CurrentSelectedEntityData.Distance < currentRadarDisplay) and (CurrentSelectedEntityData.IsDrawing == true) then
+        local DistanceRadius = (radarRadius / currentRadarDisplay) * CurrentSelectedEntityData.Distance;
+        local AngleInRads = (CurrentSelectedEntityData.Azimuth - radarCorrection) * 2 * math.pi;
+        local x = centerx + DistanceRadius * math.cos(AngleInRads);
+        local y = centery + DistanceRadius * math.sin(AngleInRads);
+
+        squarex = x - 2;
+        squarey = y - 2;
+        screen.setColor(0, 150, 150);
+        screen.drawRect(squarex, squarey, 4, 4);
     end
 end
