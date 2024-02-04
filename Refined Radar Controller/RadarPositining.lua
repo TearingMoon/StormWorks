@@ -112,7 +112,7 @@ function onDraw()
     centerx = w / 2;
     centery = h / 2;
     radarRadius = centery - h / 12;
-
+    screen.setColor(255,255,255);
     screen.drawTextBox(0, 0, w, h / 12, tostring(displayZoom));
 
     durationTime = 60 * 5;
