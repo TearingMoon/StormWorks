@@ -33,11 +33,11 @@ do
         simulator:setInputNumber(4, screenConnection.touchY)
 
         -- NEW! button/slider options from the UI
-        simulator:setInputBool(31, simulator:getIsClicked(1))     -- if button 1 is clicked, provide an ON pulse for input.getBool(31)
-        simulator:setInputNumber(2, simulator:getSlider(1))      -- set input 31 to the value of slider 1
+        simulator:setInputBool(31, simulator:getIsClicked(1)) -- if button 1 is clicked, provide an ON pulse for input.getBool(31)
+        simulator:setInputNumber(2, simulator:getSlider(1))   -- set input 31 to the value of slider 1
 
-        simulator:setInputBool(32, simulator:getIsToggled(2))     -- make button 2 a toggle, for input.getBool(32)
-        simulator:setInputNumber(6, simulator:getSlider(2)) -- set input 32 to the value from slider 2 * 50
+        simulator:setInputBool(32, simulator:getIsToggled(2)) -- make button 2 a toggle, for input.getBool(32)
+        simulator:setInputNumber(6, simulator:getSlider(2))   -- set input 32 to the value from slider 2 * 50
     end;
 end
 ---@endsection
@@ -72,8 +72,8 @@ function onDraw()
     w = screen.getWidth();
     h = screen.getHeight();
     boxHeight = h / 5;
-    screen.setColor(0,255,0);
-    screen.drawTextBox(0, 0, w, boxHeight, "Target:" .. tostring(math.floor(displayedData.SelectedEntity)),0);
+    screen.setColor(0, 255, 0);
+    screen.drawTextBox(0, 0, w, boxHeight, "Target:" .. tostring(math.floor(displayedData.SelectedEntity)), 0);
     screen.drawTextBox(0, boxHeight, w, boxHeight, "Distance:" .. tostring(math.floor(displayedData.Distance)), 0);
     NorthRads = northOffset * math.pi;
     EntityRads = displayedData.Azimuth * math.pi;
@@ -82,7 +82,7 @@ function onDraw()
     screen.drawTextBox(0, boxHeight * 2, w, boxHeight, "Angle from N:" .. tostring(math.floor(AngleToNorth)), 0);
     altitude = displayedData.Distance * math.tan((displayedData.Elevation * math.pi));
     screen.drawTextBox(0, boxHeight * 3, w, boxHeight, "Altitude:" .. tostring(math.floor(altitude)), 0);
-    visibleRange = "ULR"
+    visibleRange = ""
     if displayedData.Distance > SSR then
         if displayedData.Distance > SR then
             if displayedData.Distance > MR then
@@ -97,6 +97,8 @@ function onDraw()
         else
             visibleRange = "SR";
         end
+    elseif displayedData.Distance == 0 then
+        visibleRange = ""
     else
         visibleRange = "SSR";
     end
